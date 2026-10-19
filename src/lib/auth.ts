@@ -68,7 +68,6 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
   const mismatch = session != null && session.userId !== payload.userId;
   if (!session || expired || mismatch) {
     if (session) await prisma.session.delete({ where: { id: session.id } }).catch(() => undefined);
-    await clearSessionCookie();
     return null;
   }
 

@@ -3,14 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "TZ=UTC DATABASE_URL=\"mysql://dexon:dexon@127.0.0.1:3307/dexon\" next dev",
-    "build": "TZ=UTC DATABASE_URL=\"mysql://dexon:dexon@127.0.0.1:3307/dexon\" prisma generate && TZ=UTC DATABASE_URL=\"mysql://dexon:dexon@127.0.0.1:3307/dexon\" next build",
-    "start": "TZ=UTC DATABASE_URL=\"mysql://dexon:dexon@127.0.0.1:3307/dexon\" next start",
+    "dev": "TZ=UTC next dev",
+    "build": "TZ=UTC prisma generate && TZ=UTC next build",
+    "start": "TZ=UTC next start",
     "test": "vitest run",
     "db:up": "docker compose up -d",
-    "db:push": "TZ=UTC DATABASE_URL=\"mysql://dexon:dexon@127.0.0.1:3307/dexon\" prisma db push",
-    "db:seed": "TZ=UTC DATABASE_URL=\"mysql://dexon:dexon@127.0.0.1:3307/dexon\" tsx prisma/seed.ts",
-    "db:setup": "TZ=UTC DATABASE_URL=\"mysql://dexon:dexon@127.0.0.1:3307/dexon\" prisma db push && TZ=UTC DATABASE_URL=\"mysql://dexon:dexon@127.0.0.1:3307/dexon\" tsx prisma/seed.ts",
+    "db:push": "TZ=UTC prisma db push",
+    "db:seed": "TZ=UTC prisma db seed",
+    "db:setup": "TZ=UTC prisma db push && TZ=UTC prisma db seed",
     "postinstall": "prisma generate"
   },
   "prisma": {
