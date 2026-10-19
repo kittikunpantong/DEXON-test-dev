@@ -1,0 +1,123 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+/// Distinguishes a blank result from an unlimited remaining life.
+/// The specification displays those two cases differently, so a single nullable number is not enough.
+enum LifeStatus {
+  empty
+  unlimited
+  finite
+
+  @@map("life_status")
+}
+
+/// One piping line. Corrosion rate and remaining life are line-level summaries of every CML.
+model Info {
+  lineNumber           String     @id @map("line_number") @db.VarChar(64)
+  location             String     @db.VarChar(255)
+  fromLocation         String     @map("from") @db.VarChar(255)
+  toLocation           String     @map("to") @db.VarChar(255)
+  drawingNumber        String     @map("drawing_number") @db.VarChar(255)
+  service              String     @db.VarChar(255)
+  material             String     @db.VarChar(255)
+  inserviceDate        DateTime?  @map("inservice_date") @db.Date
+  pipeSize             Decimal    @map("pipe_size") @db.Decimal(6, 3)
+  originalThickness    Decimal?   @map("original_thickness") @db.Decimal(8, 3)
+  stress               Decimal    @db.Decimal(12, 3)
+  jointEfficiency      Decimal    @map("joint_efficiency") @db.Decimal(5, 3)
+  ca                   Decimal    @db.Decimal(8, 3)
+  designLife           Int        @map("design_life")
+  designPressure       Decimal    @map("design_pressure") @db.Decimal(10, 3)
+  operatingPressure    Decimal    @map("operating_pressure") @db.Decimal(10, 3)
+  designTemperature    Decimal    @map("design_temperature") @db.Decimal(8, 3)
+  operatingTemperature Decimal    @map("operating_temperature") @db.Decimal(8, 3)
+  corrosionRate        Decimal?   @map("corrosion_rate") @db.Decimal(10, 4)
+  remainingLife        Decimal?   @map("remaining_life") @db.Decimal(10, 2)
+  lifeStatus           LifeStatus @default(empty) @map("life_status")
+  /// Removed from the register. The row stays so history can be recovered.
+  deletedAt            DateTime?  @map("deleted_at")
+  cmls                 Cml[]
+
+  @@map("info")
+}
+
+model Cml {
+  lineNumber            String     @map("line_number") @db.VarChar(64)
+  cmlNumber             Int        @map("cml_number")
+  cmlDescription        String     @map("cml_description") @db.VarChar(255)
+  actualOutsideDiameter Decimal?   @map("actual_outside_diameter") @db.Decimal(8, 3)
+  designThickness       Decimal?   @map("design_thickness") @db.Decimal(8, 3)
+  structuralThickness   Decimal?   @map("structural_thickness") @db.Decimal(8, 3)
+  requiredThickness     Decimal?   @map("required_thickness") @db.Decimal(8, 3)
+  corrosionRate         Decimal?   @map("corrosion_rate") @db.Decimal(10, 4)
+  remainingLife         Decimal?   @map("remaining_life") @db.Decimal(10, 2)
+  lifeStatus            LifeStatus @default(empty) @map("life_status")
+  deletedAt             DateTime?  @map("deleted_at")
+  info                  Info       @relation(fields: [lineNumber], references: [lineNumber], onDelete: Cascade, onUpdate: Cascade)
+  testPoints            TestPoint[]
+
+  @@id([lineNumber, cmlNumber])
+  @@map("cml")
+}
+
+model TestPoint {
+  lineNumber    String     @map("line_number") @db.VarChar(64)
+  cmlNumber     Int        @map("cml_number")
+  tpNumber      Int        @map("tp_number")
+  tpDescription Int        @map("tp_description")
+  note          String?    @db.VarChar(500)
+  corrosionRate Decimal?   @map("corrosion_rate") @db.Decimal(10, 4)
+  remainingLife Decimal?   @map("remaining_life") @db.Decimal(10, 2)
+  lifeStatus    LifeStatus @default(empty) @map("life_status")
+  deletedAt     DateTime?  @map("deleted_at")
+  cml           Cml        @relation(fields: [lineNumber, cmlNumber], references: [lineNumber, cmlNumber], onDelete: Cascade, onUpdate: Cascade)
+  readings      Thickness[]
+
+  @@id([lineNumber, cmlNumber, tpNumber])
+  @@map("test_point")
+}
+
+/// One person who can open the inspection register. Email login and Google login share a row.
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique @db.VarChar(255)
+  name         String    @db.VarChar(255)
+  passwordHash String?   @map("password_hash") @db.VarChar(255)
+  googleSub    String?   @unique @map("google_sub") @db.VarChar(255)
+  imageUrl     String?   @map("image_url") @db.VarChar(500)
+  createdAt    DateTime  @default(now()) @map("created_at")
+  sessions     Session[]
+
+  @@map("user")
+}
+
+/// Server-side login. The browser only keeps an encrypted id of this row.
+model Session {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  expiresAt DateTime @map("expires_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Thickness {
+  lineNumber             String    @map("line_number") @db.VarChar(64)
+  cmlNumber              Int       @map("cml_number")
+  tpNumber               Int       @map("tp_number")
+  inspectionDate         DateTime  @map("inspection_date") @db.Date
+  actualThickness        Decimal   @map("actual_thickness") @db.Decimal(8, 3)
+  intervalCorrosionRate  Decimal?  @map("interval_corrosion_rate") @db.Decimal(10, 4)
+  deletedAt              DateTime? @map("deleted_at")
+  testPoint              TestPoint @relation(fields: [lineNumber, cmlNumber, tpNumber], references: [lineNumber, cmlNumber, tpNumber], onDelete: Cascade, onUpdate: Cascade)
+
+  @@id([lineNumber, cmlNumber, tpNumber, inspectionDate])
+  @@map("thickness")
+}
