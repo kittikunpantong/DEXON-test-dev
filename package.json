@@ -1,0 +1,40 @@
+{
+  "name": "dexon",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "TZ=UTC DATABASE_URL=\"mysql://dexon:dexon@127.0.0.1:3307/dexon\" next dev",
+    "build": "TZ=UTC DATABASE_URL=\"mysql://dexon:dexon@127.0.0.1:3307/dexon\" prisma generate && TZ=UTC DATABASE_URL=\"mysql://dexon:dexon@127.0.0.1:3307/dexon\" next build",
+    "start": "TZ=UTC DATABASE_URL=\"mysql://dexon:dexon@127.0.0.1:3307/dexon\" next start",
+    "test": "vitest run",
+    "db:up": "docker compose up -d",
+    "db:push": "TZ=UTC DATABASE_URL=\"mysql://dexon:dexon@127.0.0.1:3307/dexon\" prisma db push",
+    "db:seed": "TZ=UTC DATABASE_URL=\"mysql://dexon:dexon@127.0.0.1:3307/dexon\" tsx prisma/seed.ts",
+    "db:setup": "TZ=UTC DATABASE_URL=\"mysql://dexon:dexon@127.0.0.1:3307/dexon\" prisma db push && TZ=UTC DATABASE_URL=\"mysql://dexon:dexon@127.0.0.1:3307/dexon\" tsx prisma/seed.ts",
+    "postinstall": "prisma generate"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "6.19.3",
+    "decimal.js": "10.6.0",
+    "jose": "^6.2.12",
+    "next": "16.4.2",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "zod": "3.25.76"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.2.2",
+    "@types/node": "22.19.11",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "postcss": "8.5.8",
+    "prisma": "6.19.3",
+    "tailwindcss": "4.2.2",
+    "tsx": "4.21.0",
+    "typescript": "5.9.3",
+    "vitest": "3.2.4"
+  }
+}

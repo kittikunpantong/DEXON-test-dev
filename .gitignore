@@ -1,0 +1,12 @@
+node_modules
+.next
+.mysql-data
+out
+dist
+.vercel
+coverage
+.env
+*.log
+.DS_Store
+prisma/*.db
+prisma/*.db-journal
